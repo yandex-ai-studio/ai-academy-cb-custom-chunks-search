@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Search Demo - Yandex Cloud</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+            color: #1f2229;
+        }
+
+        /* Main container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 32px 24px;
+        }
+
+        /* Hero section */
+        .hero {
+            background: white;
+            border-radius: 12px;
+            padding: 24px 32px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        }
+
+        .hero h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #1f2229;
+        }
+
+        .hero p {
+            font-size: 15px;
+            color: #6c7380;
+            line-height: 1.5;
+        }
+
+        /* Card */
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #1f2229;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: #5282FF;
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #4169E1;
+        }
+
+        .btn-secondary {
+            background: #f5f7fa;
+            color: #1f2229;
+            border: 1px solid #e6e9ed;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #e6e9ed;
+        }
+
+        .btn-danger {
+            background: #ff4d4f;
+            color: white;
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            background: #d9363e;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-full {
+            width: 100%;
+            justify-content: center;
+        }
+
+        /* Mode selector */
+        .mode-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .mode-card {
+            background: white;
+            border: 2px solid #e6e9ed;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .mode-card:hover {
+            border-color: #5282FF;
+            box-shadow: 0 4px 12px rgba(82, 130, 255, 0.1);
+        }
+
+        .mode-card.active {
+            border-color: #5282FF;
+            background: #f0f5ff;
+        }
+
+        .mode-card h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #1f2229;
+        }
+
+        .mode-card p {
+            font-size: 13px;
+            color: #6c7380;
+            line-height: 1.4;
+        }
+
+        .mode-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 12px;
+        }
+
+        .mode-badge.mode-a {
+            background: #e6f7ff;
+            color: #0958d9;
+        }
+
+        .mode-badge.mode-b {
+            background: #e6f7ff;
+            color: #0958d9;
+        }
+
+        /* Search box */
+        .search-box {
+            margin-bottom: 24px;
+        }
+
+        .search-input-group {
+            display: flex;
+            gap: 12px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #e6e9ed;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.2s;
+            background: white;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #5282FF;
+            box-shadow: 0 0 0 3px rgba(82, 130, 255, 0.1);
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #f5f7fa;
+            border-top: 3px solid #5282FF;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: #6c7380;
+            font-size: 15px;
+        }
+
+        /* Alert */
+        .alert {
+            padding: 16px 20px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .alert-success {
+            background: #f6ffed;
+            border: 1px solid #b7eb8f;
+            color: #389e0d;
+        }
+
+        .alert-error {
+            background: #fff2f0;
+            border: 1px solid #ffccc7;
+            color: #cf1322;
+        }
+
+        .alert-icon {
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        /* Results */
+        .results {
+            display: none;
+        }
+
+        .results.show {
+            display: block;
+        }
+
+        .answer-box {
+            background: #f0f5ff;
+            border: 1px solid #adc6ff;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .answer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .answer-box h3 {
+            color: #0958d9;
+            margin: 0;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .answer-box p {
+            line-height: 1.6;
+            color: #1f2229;
+            font-size: 15px;
+        }
+
+        .tokens-badge {
+            color: #6c7380;
+            font-size: 13px;
+            font-weight: 400;
+            display: flex;
+            align-items: center;
+        }
+
+        .info-badge {
+            display: inline-block;
+            background: white;
+            border: 1px solid #adc6ff;
+            color: #0958d9;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 12px;
+        }
+
+        /* Chunks section */
+        .chunks-section {
+            margin-top: 24px;
+        }
+
+        .section-toggle {
+            background: #f5f7fa;
+            border: 1px solid #e6e9ed;
+            padding: 14px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .section-toggle:hover {
+            background: #e6e9ed;
+        }
+
+        .section-toggle h3 {
+            margin: 0;
+            color: #1f2229;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .section-toggle .arrow {
+            font-size: 18px;
+            transition: transform 0.3s;
+            color: #6c7380;
+        }
+
+        .section-toggle .arrow.open {
+            transform: rotate(180deg);
+        }
+
+        .section-content {
+            display: none;
+            margin-top: 16px;
+        }
+
+        .section-content.show {
+            display: block;
+        }
+
+        /* Chunk card */
+        .chunk {
+            background: white;
+            border: 1px solid #e6e9ed;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 12px;
+            transition: all 0.2s;
+        }
+
+        .chunk:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            border-color: #d9d9d9;
+        }
+
+        .chunk-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .chunk-header strong {
+            color: #1f2229;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .chunk-score {
+            background: linear-gradient(135deg, #5282FF 0%, #4169E1 100%);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .chunk-text {
+            color: #1f2229;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            font-size: 14px;
+        }
+
+        /* JSON viewer */
+        .json-viewer {
+            background: #1f2229;
+            border-radius: 8px;
+            padding: 20px;
+            overflow-x: auto;
+            margin-top: 16px;
+        }
+
+        .json-viewer pre {
+            margin: 0;
+            color: #d4d4d4;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .json-key { color: #9cdcfe; }
+        .json-string { color: #ce9178; }
+        .json-number { color: #b5cea8; }
+        .json-boolean { color: #569cd6; }
+        .json-null { color: #569cd6; }
+
+        /* Utility classes */
+        .hidden {
+            display: none !important;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .mt-2 {
+            margin-top: 16px;
+        }
+
+        .mb-2 {
+            margin-bottom: 16px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .mode-selector {
+                grid-template-columns: 1fr;
+            }
+
+            .search-input-group {
+                flex-direction: column;
+            }
+
+            .hero {
+                padding: 24px;
+            }
+
+            .card {
+                padding: 20px;
+            }
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px;
+            border-bottom: 1px solid #e6e9ed;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2229;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 28px;
+            color: #6c7380;
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover {
+            background: #f5f7fa;
+            color: #1f2229;
+        }
+
+        .modal-body {
+            padding: 24px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .modal-body pre {
+            margin: 0;
+            padding: 16px;
+            background: #f5f7fa;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            color: #1f2229;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-x: auto;
+        }
+
+        .view-data-btn {
+            margin-top: 12px;
+            padding: 8px 16px;
+            background: white;
+            border: 1px solid #e6e9ed;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #1f2229;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-block;
+        }
+
+        .view-data-btn:hover {
+            background: #f5f7fa;
+            border-color: #5282FF;
+            color: #5282FF;
+        }
+    </style>
+</head>
+<body>
+    <!-- Main content -->
+    <div class="container">
+        <!-- Hero section -->
+        <div class="hero">
+            <h1>Демонстрация AI Search</h1>
+            <p>Сравните эффективность автоматического и пользовательского чанкования документов</p>
+        </div>
+
+        <!-- Initialization section -->
+        <div class="card" id="initSection">
+            <div class="card-title">Начало работы</div>
+            
+            <!-- Max results parameter -->
+            <div style="margin-bottom: 16px;">
+                <label for="maxResultsInput" style="display: block; margin-bottom: 8px; font-size: 14px; font-weight: 500; color: #1f2229;">
+                    Максимальное количество результатов поиска
+                </label>
+                <input
+                    type="number"
+                    id="maxResultsInput"
+                    class="search-input"
+                    value="3"
+                    min="1"
+                    max="10"
+                    style="width: 200px;"
+                    placeholder="3"
+                >
+            </div>
+            
+            <!-- Chunking parameters for Mode A -->
+            <div style="margin-bottom: 20px; padding: 16px; background: #f5f7fa; border-radius: 8px;">
+                <div style="font-size: 14px; font-weight: 600; color: #1f2229; margin-bottom: 12px;">
+                    Параметры автоматического чанкования
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div>
+                        <label for="maxChunkSizeInput" style="display: block; margin-bottom: 8px; font-size: 13px; font-weight: 500; color: #6c7380;">
+                            Максимальный размер чанка (токены)
+                        </label>
+                        <input
+                            type="number"
+                            id="maxChunkSizeInput"
+                            class="search-input"
+                            value="800"
+                            min="100"
+                            max="4096"
+                            style="width: 100%;"
+                            placeholder="800"
+                        >
+                        <div style="font-size: 11px; color: #9ca3af; margin-top: 4px;">От 100 до 4096 токенов</div>
+                    </div>
+                    <div>
+                        <label for="chunkOverlapInput" style="display: block; margin-bottom: 8px; font-size: 13px; font-weight: 500; color: #6c7380;">
+                            Перекрытие чанков (токены)
+                        </label>
+                        <input
+                            type="number"
+                            id="chunkOverlapInput"
+                            class="search-input"
+                            value="400"
+                            min="0"
+                            max="2048"
+                            style="width: 100%;"
+                            placeholder="400"
+                        >
+                        <div style="font-size: 11px; color: #9ca3af; margin-top: 4px;">Не более половины размера чанка</div>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="btn btn-primary btn-full" onclick="initializeStores()" id="initBtn">
+                Загрузить данные и создать индексы
+            </button>
+        </div>
+
+        <!-- Reset section -->
+        <div class="card hidden" id="resetSection">
+            <div class="card-title">Управление индексами</div>
+            <p style="color: #6c7380; margin-bottom: 16px; font-size: 14px;">
+                Удалить созданные индексы и загруженные файлы
+            </p>
+            <button class="btn btn-danger" onclick="resetStores()" id="resetBtn">
+                Удалить индексы и файлы
+            </button>
+        </div>
+
+        <!-- Mode selector -->
+        <div class="card hidden" id="modeSection">
+            <div class="card-title">Выберите режим поиска</div>
+            <div class="mode-selector">
+                <div class="mode-card active" data-mode="auto" onclick="selectMode('auto')">
+                    <div class="mode-badge mode-a">Режим A</div>
+                    <h3>Автоматическое чанкование</h3>
+                    <p>Платформа автоматически разбивает документ на фрагменты</p>
+                    <button class="view-data-btn" onclick="event.stopPropagation(); viewDataFile('auto')">
+                        Посмотреть исходный файл
+                    </button>
+                </div>
+                <div class="mode-card" data-mode="chunks" onclick="selectMode('chunks')">
+                    <div class="mode-badge mode-b">Режим B</div>
+                    <h3>Пользовательские чанки</h3>
+                    <p>Предварительно подготовленные фрагменты информации в формате JSONL</p>
+                    <button class="view-data-btn" onclick="event.stopPropagation(); viewDataFile('chunks')">
+                        Посмотреть исходный файл
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search box -->
+        <div class="card hidden" id="searchSection">
+            <div class="card-title">Поиск в базе знаний</div>
+            <div class="search-box">
+                <div class="search-input-group">
+                    <input
+                        type="text"
+                        class="search-input"
+                        id="queryInput"
+                        placeholder="Введите ваш вопрос..."
+                        onkeypress="handleKeyPress(event)"
+                    >
+                    <button class="btn btn-primary" onclick="performSearch()" id="searchBtn">
+                        Найти
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading -->
+        <div class="loading hidden" id="loading">
+            <div class="loading-spinner"></div>
+            <p class="loading-text" id="loadingText">Выполняется поиск...</p>
+        </div>
+
+        <!-- Error -->
+        <div id="errorContainer"></div>
+
+        <!-- Results -->
+        <div class="results" id="results">
+            <div class="card">
+                <div class="answer-box">
+                    <div class="info-badge" id="modeInfo"></div>
+                    <div class="answer-header">
+                        <h3>Ответ</h3>
+                        <div class="tokens-badge" id="tokensBadge" style="display: none;">
+                            <span id="tokensCount">0</span>&nbsp;токенов
+                        </div>
+                    </div>
+                    <p id="answerText"></p>
+                </div>
+
+                <div class="chunks-section">
+                    <div class="section-toggle" onclick="toggleChunks()">
+                        <h3>Найденные фрагменты</h3>
+                        <span class="arrow" id="chunksArrow">▼</span>
+                    </div>
+                    <div class="section-content show" id="chunksList"></div>
+                </div>
+
+                <div class="chunks-section">
+                    <div class="section-toggle" onclick="toggleRawJson()">
+                        <h3>Полный ответ (JSON)</h3>
+                        <span class="arrow" id="jsonArrow">▼</span>
+                    </div>
+                    <div class="section-content" id="rawJsonContainer">
+                        <div class="json-viewer">
+                            <pre id="rawJsonText"></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for viewing data files -->
+    <div class="modal" id="dataModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Содержимое файла</h3>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <pre id="modalContent"></pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentMode = 'auto';
+        let storesInitialized = false;
+        let maxNumResults = 3; // Значение по умолчанию
+        let maxChunkSizeTokens = 800; // Значение по умолчанию
+        let chunkOverlapTokens = 400; // Значение по умолчанию
+        let resultsCache = {
+            'auto': null,
+            'chunks': null
+        };
+
+        // Initialize stores
+        async function initializeStores() {
+            const initBtn = document.getElementById('initBtn');
+            const loading = document.getElementById('loading');
+            
+            // Get chunking parameters
+            const maxChunkSizeInput = document.getElementById('maxChunkSizeInput');
+            const chunkOverlapInput = document.getElementById('chunkOverlapInput');
+            
+            if (maxChunkSizeInput) {
+                maxChunkSizeTokens = parseInt(maxChunkSizeInput.value) || 800;
+            }
+            if (chunkOverlapInput) {
+                chunkOverlapTokens = parseInt(chunkOverlapInput.value) || 400;
+            }
+            
+            // Validate parameters
+            if (maxChunkSizeTokens < 100 || maxChunkSizeTokens > 4096) {
+                showError('Максимальный размер чанка должен быть от 100 до 4096 токенов');
+                return;
+            }
+            if (chunkOverlapTokens < 0 || chunkOverlapTokens > maxChunkSizeTokens / 2) {
+                showError('Перекрытие чанков не должно превышать половину размера чанка');
+                return;
+            }
+            
+            initBtn.disabled = true;
+            initBtn.textContent = 'Создание индексов...';
+            loading.classList.remove('hidden');
+            document.getElementById('loadingText').textContent = 'Создание индексов...';
+            clearError();
+
+            try {
+                const response = await fetch('api/initialize', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        max_chunk_size_tokens: maxChunkSizeTokens,
+                        chunk_overlap_tokens: chunkOverlapTokens
+                    })
+                });
+
+                if (!response.ok) {
+                    const err = await response.json();
+                    const msg = Array.isArray(err.detail) ? err.detail.map(d => d.msg || JSON.stringify(d)).join('; ') : (err.detail || 'Ошибка при инициализации');
+                    throw new Error(msg);
+                }
+
+                const data = await response.json();
+                storesInitialized = true;
+                
+                document.getElementById('initSection').classList.add('hidden');
+                document.getElementById('modeSection').classList.remove('hidden');
+                document.getElementById('searchSection').classList.remove('hidden');
+                document.getElementById('resetSection').classList.remove('hidden');
+                
+                showSuccess('Индексы успешно созданы!', `Режим A: ${data.stores.auto.store_id}<br>Режим B: ${data.stores.chunks.store_id}`);
+
+            } catch (error) {
+                showError('Ошибка при инициализации: ' + error.message);
+                initBtn.disabled = false;
+                initBtn.textContent = 'Загрузить данные и создать индексы';
+            } finally {
+                loading.classList.add('hidden');
+            }
+        }
+
+        // Reset stores
+        async function resetStores() {
+            if (!confirm('Вы уверены, что хотите удалить все индексы?')) {
+                return;
+            }
+
+            const resetBtn = document.getElementById('resetBtn');
+            const loading = document.getElementById('loading');
+            
+            resetBtn.disabled = true;
+            resetBtn.textContent = 'Удаление...';
+            loading.classList.remove('hidden');
+            document.getElementById('loadingText').textContent = 'Удаление индексов...';
+
+            try {
+                const response = await fetch('api/reset', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (!response.ok) {
+                    const err = await response.json();
+                    const msg = Array.isArray(err.detail) ? err.detail.map(d => d.msg || JSON.stringify(d)).join('; ') : (err.detail || 'Ошибка при сбросе');
+                    throw new Error(msg);
+                }
+
+                storesInitialized = false;
+                resultsCache = { 'auto': null, 'chunks': null };
+                
+                document.getElementById('modeSection').classList.add('hidden');
+                document.getElementById('searchSection').classList.add('hidden');
+                document.getElementById('resetSection').classList.add('hidden');
+                document.getElementById('results').classList.remove('show');
+                document.getElementById('initSection').classList.remove('hidden');
+                
+                const initBtn = document.getElementById('initBtn');
+                initBtn.disabled = false;
+                initBtn.textContent = 'Загрузить данные и создать индексы';
+                
+                showSuccess('Индексы и файлы успешно удалены!', 'Теперь можно создать их заново');
+
+            } catch (error) {
+                showError('Ошибка при сбросе: ' + error.message);
+            } finally {
+                loading.classList.add('hidden');
+                resetBtn.disabled = false;
+                resetBtn.textContent = 'Удалить индексы и файлы';
+            }
+        }
+
+        // Select mode
+        function selectMode(mode) {
+            currentMode = mode;
+            
+            document.querySelectorAll('.mode-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            document.querySelector(`[data-mode="${mode}"]`).classList.add('active');
+            
+            if (resultsCache[mode]) {
+                displayResults(resultsCache[mode]);
+            } else {
+                document.getElementById('results').classList.remove('show');
+            }
+        }
+
+        // Handle Enter key
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                performSearch();
+            }
+        }
+
+        // Perform search
+        async function performSearch() {
+            const query = document.getElementById('queryInput').value.trim();
+            
+            if (!query) {
+                showError('Пожалуйста, введите вопрос');
+                return;
+            }
+
+            // Берём актуальное значение из поля (на случай если пользователь не вызывал change)
+            const maxResultsInput = document.getElementById('maxResultsInput');
+            if (maxResultsInput) {
+                const value = parseInt(maxResultsInput.value, 10);
+                if (value >= 1 && value <= 10) {
+                    maxNumResults = value;
+                }
+            }
+
+            const loading = document.getElementById('loading');
+            const searchBtn = document.getElementById('searchBtn');
+            
+            loading.classList.remove('hidden');
+            document.getElementById('loadingText').textContent = 'Выполняется поиск...';
+            document.getElementById('results').classList.remove('show');
+            searchBtn.disabled = true;
+            clearError();
+
+            try {
+                const response = await fetch('api/search', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        query: query,
+                        mode: currentMode,
+                        max_num_results: maxNumResults
+                    })
+                });
+
+                if (!response.ok) {
+                    const err = await response.json();
+                    const msg = Array.isArray(err.detail) ? err.detail.map(d => d.msg || JSON.stringify(d)).join('; ') : (err.detail || 'Ошибка при поиске');
+                    throw new Error(msg);
+                }
+
+                const data = await response.json();
+                resultsCache[currentMode] = data;
+                displayResults(data);
+
+            } catch (error) {
+                showError(error.message);
+            } finally {
+                loading.classList.add('hidden');
+                searchBtn.disabled = false;
+            }
+        }
+
+        // Display results
+        function displayResults(data) {
+            const modeInfo = document.getElementById('modeInfo');
+            modeInfo.textContent = currentMode === 'auto'
+                ? 'Режим A: Автоматическое чанкование'
+                : 'Режим B: Пользовательские чанки';
+
+            document.getElementById('answerText').textContent = data.answer || 'Ответ не получен';
+
+            // Отображаем количество токенов, если доступно
+            const tokensBadge = document.getElementById('tokensBadge');
+            const tokensCount = document.getElementById('tokensCount');
+            
+            if (data.raw_response && data.raw_response.usage && data.raw_response.usage.total_tokens) {
+                tokensCount.textContent = data.raw_response.usage.total_tokens.toLocaleString('ru-RU');
+                tokensBadge.style.display = 'flex';
+            } else {
+                tokensBadge.style.display = 'none';
+            }
+
+            const chunksList = document.getElementById('chunksList');
+            chunksList.innerHTML = '';
+
+            if (data.chunks && data.chunks.length > 0) {
+                data.chunks.forEach((chunk, index) => {
+                    const chunkDiv = document.createElement('div');
+                    chunkDiv.className = 'chunk';
+                    
+                    const score = (chunk.score * 100).toFixed(1);
+                    const filename = chunk.filename || 'Неизвестный источник';
+                    
+                    chunkDiv.innerHTML = `
+                        <div class="chunk-header">
+                            <div>
+                                <strong>Фрагмент ${index + 1}</strong>
+                                <span style="color: #6c7380; font-size: 12px; margin-left: 8px;">📄 ${escapeHtml(filename)}</span>
+                            </div>
+                            <span class="chunk-score">${score}%</span>
+                        </div>
+                        <div class="chunk-text">${escapeHtml(chunk.text)}</div>
+                    `;
+                    
+                    chunksList.appendChild(chunkDiv);
+                });
+            } else {
+                chunksList.innerHTML = '<p style="color: #6c7380; padding: 20px; text-align: center;">Фрагменты не найдены</p>';
+            }
+
+            // Отображаем raw_response вместо всего объекта data
+            const rawResponse = data.raw_response || data;
+            document.getElementById('rawJsonText').innerHTML = syntaxHighlight(rawResponse);
+            document.getElementById('results').classList.add('show');
+        }
+
+        // Toggle sections
+        function toggleChunks() {
+            const content = document.getElementById('chunksList');
+            const arrow = document.getElementById('chunksArrow');
+            content.classList.toggle('show');
+            arrow.classList.toggle('open');
+        }
+
+        function toggleRawJson() {
+            const content = document.getElementById('rawJsonContainer');
+            const arrow = document.getElementById('jsonArrow');
+            content.classList.toggle('show');
+            arrow.classList.toggle('open');
+        }
+
+        // Syntax highlight JSON
+        function syntaxHighlight(json) {
+            json = JSON.stringify(json, null, 2);
+            json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+                let cls = 'json-number';
+                if (/^"/.test(match)) {
+                    if (/:$/.test(match)) {
+                        cls = 'json-key';
+                    } else {
+                        cls = 'json-string';
+                    }
+                } else if (/true|false/.test(match)) {
+                    cls = 'json-boolean';
+                } else if (/null/.test(match)) {
+                    cls = 'json-null';
+                }
+                return '<span class="' + cls + '">' + match + '</span>';
+            });
+        }
+
+        // Show error
+        function showError(message) {
+            clearError();
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'alert alert-error';
+            errorDiv.innerHTML = `
+                <span class="alert-icon">⚠️</span>
+                <div>${message}</div>
+            `;
+            document.getElementById('errorContainer').appendChild(errorDiv);
+            setTimeout(() => errorDiv.remove(), 5000);
+        }
+
+        // Show success
+        function showSuccess(title, message) {
+            clearError();
+            const successDiv = document.createElement('div');
+            successDiv.className = 'alert alert-success';
+            successDiv.innerHTML = `
+                <span class="alert-icon">✓</span>
+                <div><strong>${title}</strong><br><small>${message}</small></div>
+            `;
+            document.getElementById('errorContainer').appendChild(successDiv);
+            setTimeout(() => successDiv.remove(), 5000);
+        }
+
+        // Clear errors
+        function clearError() {
+            document.getElementById('errorContainer').innerHTML = '';
+        }
+
+        // Escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // View data file
+        async function viewDataFile(mode) {
+            try {
+                const response = await fetch(`api/data/${mode}`);
+                if (!response.ok) {
+                    throw new Error('Не удалось загрузить файл');
+                }
+                
+                const data = await response.json();
+                
+                document.getElementById('modalTitle').textContent = `Файл: ${data.filename}`;
+                document.getElementById('modalContent').textContent = data.content;
+                document.getElementById('dataModal').classList.add('show');
+            } catch (error) {
+                showError('Ошибка при загрузке файла: ' + error.message);
+            }
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('dataModal').classList.remove('show');
+        }
+
+        // Close modal on background click
+        document.getElementById('dataModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        // Update max_num_results when input changes
+        document.addEventListener('DOMContentLoaded', () => {
+            const maxResultsInput = document.getElementById('maxResultsInput');
+            if (maxResultsInput) {
+                maxResultsInput.addEventListener('change', (e) => {
+                    const value = parseInt(e.target.value);
+                    if (value >= 1 && value <= 10) {
+                        maxNumResults = value;
+                    } else {
+                        e.target.value = maxNumResults;
+                        showError('Значение должно быть от 1 до 10');
+                    }
+                });
+            }
+        });
+
+        // Check stores on load
+        window.addEventListener('load', async () => {
+            try {
+                const response = await fetch('api/stores');
+                const data = await response.json();
+                
+                if (data.auto && data.chunks) {
+                    storesInitialized = true;
+                    document.getElementById('initSection').classList.add('hidden');
+                    document.getElementById('modeSection').classList.remove('hidden');
+                    document.getElementById('searchSection').classList.remove('hidden');
+                    document.getElementById('resetSection').classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Не удалось подключиться к серверу:', error);
+            }
+        });
+    </script>
+</body>
+</html>

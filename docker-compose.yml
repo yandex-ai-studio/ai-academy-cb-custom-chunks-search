@@ -1,0 +1,23 @@
+services:
+  ai-search-demo:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ai-search-demo
+    ports:
+      - "${SERVER_PORT:-8000}:8000"
+    environment:
+      - YANDEX_API_KEY=${YANDEX_API_KEY}
+      - YANDEX_FOLDER_ID=${YANDEX_FOLDER_ID}
+      - YANDEX_CLOUD_MODEL=${YANDEX_CLOUD_MODEL:-qwen3-235b-a22b-fp8/latest}
+      - SERVER_PORT=8000
+    volumes:
+      # Монтируем директории для сохранения данных между перезапусками
+      - ./data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
