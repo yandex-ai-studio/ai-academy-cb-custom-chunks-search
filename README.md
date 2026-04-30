@@ -250,3 +250,7 @@ vector_store = await async_client.vector_stores.create(
 - [Yandex Cloud AI Studio](https://yandex.cloud/ru/docs/ai-studio/)
 - [Vector Store API](https://yandex.cloud/ru/docs/ai-studio/concepts/search/vectorstore)
 - [Создание агента с чанками](https://yandex.cloud/ru/docs/ai-studio/operations/agents/create-prechunked-search-agent)
+
+## Автор
+
+Copyright © 2026 YANDEX LLC
