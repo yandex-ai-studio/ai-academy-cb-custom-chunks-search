@@ -8,6 +8,8 @@
 - **Режим A**: автоматическое чанкование (платформа сама разбивает документ)
 - **Режим B**: пользовательские чанки (вы контролируете структуру данных)
 
+> 🚀 **[Повторить с AI Studio →](https://aistudio.yandex.ru/platform?utm_source=github&utm_medium=owned&utm_campaign=t:info;gl:lgen&utm_content=cookbook_custom_chunks_search)**
+
 ## Структура проекта
 
 ```
